@@ -1,23 +1,28 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { ShieldCheck, X } from "lucide-react"
+import { ShieldCheck, AlertCircle, X } from "lucide-react"
+import { cn } from "@/app/lib/utils"
 
-interface SuccessModalProps {
+interface StatusModalProps {
   isOpen: boolean
   onClose: () => void
   title: string
   description: React.ReactNode
   buttonText?: string
+  type?: "success" | "error"
 }
 
-export default function SuccessModal({ 
+export default function StatusModal({ 
   isOpen, 
   onClose, 
   title, 
   description, 
-  buttonText = "Got it" 
-}: SuccessModalProps) {
+  buttonText = "Got it",
+  type = "success"
+}: StatusModalProps) {
+  const isSuccess = type === "success"
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -42,8 +47,15 @@ export default function SuccessModal({
               <X className="w-4 h-4" />
             </button>
 
-            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ShieldCheck className="w-8 h-8 text-green-400" />
+            <div className={cn(
+              "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6",
+              isSuccess ? "bg-green-500/20" : "bg-red-500/20"
+            )}>
+              {isSuccess ? (
+                <ShieldCheck className="w-8 h-8 text-green-400" />
+              ) : (
+                <AlertCircle className="w-8 h-8 text-red-400" />
+              )}
             </div>
             
             <h2 className="text-2xl font-bold text-white mb-3 tracking-tight">{title}</h2>
@@ -53,7 +65,12 @@ export default function SuccessModal({
             
             <button
               onClick={onClose}
-              className="w-full bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-xl transition-all border border-white/10"
+              className={cn(
+                "w-full font-bold py-3 rounded-xl transition-all border",
+                isSuccess 
+                  ? "bg-white/5 hover:bg-white/10 text-white border-white/10" 
+                  : "bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20"
+              )}
             >
               {buttonText}
             </button>

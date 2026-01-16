@@ -12,7 +12,7 @@ import { authApi } from "@/app/lib/api"
 import { useRouter } from "next/navigation"
 import { AnimatePresence } from "framer-motion"
 import CyberMascot from "@/app/components/CyberMascot"
-import SuccessModal from "@/app/components/SuccessModal"
+import StatusModal from "@/app/components/StatusModal"
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -32,6 +32,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
+  const [errorInfo, setErrorInfo] = useState<{ title: string; message: string } | null>(null)
   const router = useRouter()
   
   const {
@@ -58,7 +59,12 @@ export default function LoginPage() {
       toast.success("Successfully logged in!")
       router.push("/")
     } catch (error: any) {
-      // Global interceptor handles toast notifications
+      const data = error.response?.data
+      const errorMessage = data?.error?.message || data?.message || "An unexpected error occurred."
+      setErrorInfo({
+        title: "Login Failed",
+        message: errorMessage
+      })
     } finally {
       setIsLoading(false)
     }
@@ -72,7 +78,12 @@ export default function LoginPage() {
       setIsSuccessModalOpen(true)
       signupRequestForm.reset()
     } catch (error: any) {
-      // Global interceptor handles toast notifications
+      const data = error.response?.data
+      const errorMessage = data?.error?.message || data?.message || "Failed to submit signup request."
+      setErrorInfo({
+        title: "Request Failed",
+        message: errorMessage
+      })
     } finally {
       setIsLoading(false)
     }
@@ -300,7 +311,7 @@ export default function LoginPage() {
         )}
       </AnimatePresence>
 
-      <SuccessModal 
+      <StatusModal 
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}
         title="Request Received"
@@ -310,6 +321,15 @@ export default function LoginPage() {
             We will contact you at your email address shortly.
           </>
         }
+      />
+
+      <StatusModal 
+        isOpen={!!errorInfo}
+        onClose={() => setErrorInfo(null)}
+        type="error"
+        title={errorInfo?.title || "Error"}
+        description={errorInfo?.message || ""}
+        buttonText="Try Again"
       />
     </div>
   )
