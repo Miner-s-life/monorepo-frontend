@@ -12,6 +12,17 @@ export const authApi = axios.create({
   },
 });
 
+// Request interceptor for adding auth header
+authApi.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
 // Response interceptor for handling global errors
 authApi.interceptors.response.use(
   (response) => response,
