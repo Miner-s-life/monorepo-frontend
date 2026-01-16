@@ -5,11 +5,12 @@ import { motion } from "framer-motion"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { TrendingUp, Mail, Lock, Loader2, ArrowRight, ShieldCheck, Coins, Database } from "lucide-react"
+import { TrendingUp, Mail, Lock, Loader2, ArrowRight, ShieldCheck, Coins, Database, Phone, MessageSquare, X } from "lucide-react"
 import { cn } from "@/app/lib/utils"
 import toast, { Toaster } from "react-hot-toast"
 import { authApi } from "@/app/lib/api"
 import { useRouter } from "next/navigation"
+import { AnimatePresence } from "framer-motion"
 import CyberMascot from "@/app/components/CyberMascot"
 
 const loginSchema = z.object({
@@ -17,10 +18,19 @@ const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
+const signupRequestSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  phoneNumber: z.string().min(10, "Invalid phone number"),
+  comment: z.string().optional(),
+})
+
 type LoginFormValues = z.infer<typeof loginSchema>
+type SignupRequestFormValues = z.infer<typeof signupRequestSchema>
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false)
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const router = useRouter()
   
   const {
@@ -31,11 +41,15 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   })
 
+  const signupRequestForm = useForm<SignupRequestFormValues>({
+    resolver: zodResolver(signupRequestSchema),
+  })
+
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true)
     try {
-      const response = await authApi.post("/auth/login", data)
-      const { accessToken, refreshToken } = response.data
+      const response = await authApi.post("/api/v1/auth/login", data)
+      const { accessToken, refreshToken } = response.data.data
       
       localStorage.setItem("accessToken", accessToken)
       localStorage.setItem("refreshToken", refreshToken)
@@ -44,6 +58,21 @@ export default function LoginPage() {
       router.push("/")
     } catch (error: any) {
       const message = error.response?.data?.message || "Failed to login. Please check your credentials."
+      toast.error(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const onSignupRequestSubmit = async (data: SignupRequestFormValues) => {
+    setIsLoading(true)
+    try {
+      await authApi.post("/api/v1/auth/signup-request", data)
+      setIsSignupModalOpen(false)
+      setIsSuccessModalOpen(true)
+      signupRequestForm.reset()
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to submit signup request."
       toast.error(message)
     } finally {
       setIsLoading(false)
@@ -164,12 +193,147 @@ export default function LoginPage() {
               )}
             </motion.button>
           </form>
+
+          <div className="mt-8 pt-6 border-t border-white/5 flex flex-col items-center gap-4">
+            <button 
+              onClick={() => setIsSignupModalOpen(true)}
+              className="text-sm font-semibold text-electric-blue/80 hover:text-electric-blue transition-all flex items-center gap-1.5"
+            >
+              Request Access
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            
+            <a 
+              href="mailto:cryptopedia.labs@gmail.com"
+              className="text-[11px] text-white/30 hover:text-white/60 transition-colors flex items-center gap-1.5 font-mono"
+            >
+              <Mail className="w-3 h-3" />
+              cryptopedia.labs@gmail.com
+            </a>
+          </div>
         </div>
 
         <p className="text-center mt-6 text-sm text-white/30 tracking-wide">
           &copy; 2026 Cryptopedia Labs. All rights reserved.
         </p>
       </motion.div>
+
+      {/* Signup Request Modal */}
+      <AnimatePresence>
+        {isSignupModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSignupModalOpen(false)}
+              className="absolute inset-0 bg-deep-space/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="glass-panel w-full max-w-md p-8 rounded-[2.5rem] border border-white/10 relative z-10 overflow-hidden"
+            >
+              <button 
+                onClick={() => setIsSignupModalOpen(false)}
+                className="absolute top-6 right-6 p-2 text-white/20 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-2">Request Access</h2>
+                <p className="text-white/40 text-sm font-medium">Join our exclusive market intelligence network.</p>
+              </div>
+
+              <form onSubmit={signupRequestForm.handleSubmit(onSignupRequestSubmit)} className="space-y-5">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-white/50 uppercase tracking-widest ml-1">Email</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                    <input
+                      {...signupRequestForm.register("email")}
+                      type="email"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-electric-blue/50"
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-white/50 uppercase tracking-widest ml-1">Phone Number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                    <input
+                      {...signupRequestForm.register("phoneNumber")}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-electric-blue/50"
+                      placeholder="e.g. 010-1234-5678"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-white/50 uppercase tracking-widest ml-1">Comment</label>
+                  <div className="relative">
+                    <MessageSquare className="absolute left-3 top-3 w-4 h-4 text-white/20" />
+                    <textarea
+                      {...signupRequestForm.register("comment")}
+                      rows={3}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-electric-blue/50 resize-none"
+                      placeholder="Tell us about your trading experience..."
+                    />
+                  </div>
+                </div>
+
+                <button
+                  disabled={isLoading}
+                  type="submit"
+                  className="w-full bg-electric-blue hover:bg-electric-blue/90 text-deep-space font-black py-3 rounded-xl flex items-center justify-center gap-2 transition-all mt-4 disabled:opacity-50"
+                >
+                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit Request"}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Success Modal */}
+      <AnimatePresence>
+        {isSuccessModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSuccessModalOpen(false)}
+              className="absolute inset-0 bg-deep-space/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="glass-panel w-full max-w-sm p-8 rounded-[2.5rem] border border-white/10 relative z-10 text-center"
+            >
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ShieldCheck className="w-8 h-8 text-green-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-3">Request Received</h2>
+              <p className="text-white/60 text-sm leading-relaxed mb-8">
+                Your application is being reviewed.<br />
+                We will contact you at your email address shortly.
+              </p>
+              <button
+                onClick={() => setIsSuccessModalOpen(false)}
+                className="w-full bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-xl transition-all border border-white/10"
+              >
+                Got it
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
