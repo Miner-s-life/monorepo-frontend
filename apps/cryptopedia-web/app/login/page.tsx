@@ -11,6 +11,7 @@ import toast, { Toaster } from "react-hot-toast"
 import { authApi } from "@/app/lib/api"
 import { useRouter } from "next/navigation"
 import { AnimatePresence } from "framer-motion"
+import { useAuth } from "@/app/context/AuthContext"
 import CyberMascot from "@/app/components/CyberMascot"
 import StatusModal from "@/app/components/StatusModal"
 
@@ -47,14 +48,15 @@ export default function LoginPage() {
     resolver: zodResolver(signupRequestSchema),
   })
 
+  const { setTokens } = useAuth()
+  
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true)
     try {
       const response = await authApi.post("/api/v1/auth/login", data)
       const { accessToken, refreshToken } = response.data.data
       
-      localStorage.setItem("accessToken", accessToken)
-      localStorage.setItem("refreshToken", refreshToken)
+      setTokens(accessToken, refreshToken)
       
       toast.success("Successfully logged in!")
       router.push("/")

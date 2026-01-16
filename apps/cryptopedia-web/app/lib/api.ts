@@ -16,6 +16,14 @@ export const authApi = axios.create({
 authApi.interceptors.response.use(
   (response) => response,
   async (error) => {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Clear tokens and redirect to login on authentication failure
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
+        window.location.href = "/login";
+      }
+    }
     // We handle custom error UI locally in components for better context
     return Promise.reject(error);
   }
