@@ -21,7 +21,7 @@ const loginSchema = z.object({
 
 const signupRequestSchema = z.object({
   email: z.string().email("Invalid email address"),
-  phoneNumber: z.string().min(10, "Invalid phone number"),
+  phoneNumber: z.string().regex(/^010-?\d{4}-?\d{4}$/, "Invalid phone format").optional().or(z.literal("")),
   comment: z.string().optional(),
 })
 
@@ -160,6 +160,7 @@ export default function LoginPage() {
                 <input
                   {...register("email")}
                   type="email"
+                  autoComplete="email"
                   placeholder="name@example.com"
                   className={cn(
                     "w-full bg-white/5 border border-white/10 rounded-lg py-3 pl-10 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-electric-blue/50 transition-all",
@@ -179,6 +180,7 @@ export default function LoginPage() {
                 <input
                   {...register("password")}
                   type="password"
+                  autoComplete="current-password"
                   placeholder="••••••••"
                   className={cn(
                     "w-full bg-white/5 border border-white/10 rounded-lg py-3 pl-10 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-electric-blue/50 transition-all",
@@ -267,6 +269,7 @@ export default function LoginPage() {
                     <input
                       {...signupRequestForm.register("email")}
                       type="email"
+                      autoComplete="email"
                       className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-electric-blue/50"
                       placeholder="Enter your email"
                     />
@@ -279,10 +282,17 @@ export default function LoginPage() {
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                     <input
                       {...signupRequestForm.register("phoneNumber")}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-electric-blue/50"
-                      placeholder="e.g. 010-1234-5678"
+                      autoComplete="tel"
+                      className={cn(
+                        "w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-electric-blue/50",
+                        signupRequestForm.formState.errors.phoneNumber && "border-red-500/50"
+                      )}
+                      placeholder="010-XXXX-XXXX"
                     />
                   </div>
+                  {signupRequestForm.formState.errors.phoneNumber && (
+                    <p className="text-[10px] text-red-400 mt-1 ml-1">{signupRequestForm.formState.errors.phoneNumber.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
