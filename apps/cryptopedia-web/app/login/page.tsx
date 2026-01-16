@@ -12,6 +12,7 @@ import { authApi } from "@/app/lib/api"
 import { useRouter } from "next/navigation"
 import { AnimatePresence } from "framer-motion"
 import CyberMascot from "@/app/components/CyberMascot"
+import SuccessModal from "@/app/components/SuccessModal"
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -57,8 +58,7 @@ export default function LoginPage() {
       toast.success("Successfully logged in!")
       router.push("/")
     } catch (error: any) {
-      const message = error.response?.data?.message || "Failed to login. Please check your credentials."
-      toast.error(message)
+      // Global interceptor handles toast notifications
     } finally {
       setIsLoading(false)
     }
@@ -72,8 +72,7 @@ export default function LoginPage() {
       setIsSuccessModalOpen(true)
       signupRequestForm.reset()
     } catch (error: any) {
-      const message = error.response?.data?.message || "Failed to submit signup request."
-      toast.error(message)
+      // Global interceptor handles toast notifications
     } finally {
       setIsLoading(false)
     }
@@ -153,15 +152,17 @@ export default function LoginPage() {
                   placeholder="name@example.com"
                   className={cn(
                     "w-full bg-white/5 border border-white/10 rounded-lg py-3 pl-10 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-electric-blue/50 transition-all",
-                    errors.email && "border-neon-magenta/50 focus:ring-neon-magenta/50"
+                    errors.email && "border-red-500/50 focus:ring-red-500/50"
                   )}
                 />
               </div>
-              {errors.email && <p className="text-xs text-neon-magenta mt-1 ml-1">{errors.email.message}</p>}
+              {errors.email && <p className="text-[10px] text-red-400 mt-1 ml-1">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-white/70 ml-1 uppercase tracking-wider">Password</label>
+              <div className="flex justify-between items-center ml-1">
+                <label className="text-xs font-medium text-white/70 uppercase tracking-wider">Password</label>
+              </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                 <input
@@ -170,11 +171,11 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   className={cn(
                     "w-full bg-white/5 border border-white/10 rounded-lg py-3 pl-10 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-electric-blue/50 transition-all",
-                    errors.password && "border-neon-magenta/50 focus:ring-neon-magenta/50"
+                    errors.password && "border-red-500/50 focus:ring-red-500/50"
                   )}
                 />
               </div>
-              {errors.password && <p className="text-xs text-neon-magenta mt-1 ml-1">{errors.password.message}</p>}
+              {errors.password && <p className="text-[10px] text-red-400 mt-1 ml-1">{errors.password.message}</p>}
             </div>
 
             <motion.button
@@ -299,41 +300,17 @@ export default function LoginPage() {
         )}
       </AnimatePresence>
 
-      {/* Success Modal */}
-      <AnimatePresence>
-        {isSuccessModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsSuccessModalOpen(false)}
-              className="absolute inset-0 bg-deep-space/80 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="glass-panel w-full max-w-sm p-8 rounded-[2.5rem] border border-white/10 relative z-10 text-center"
-            >
-              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ShieldCheck className="w-8 h-8 text-green-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-3">Request Received</h2>
-              <p className="text-white/60 text-sm leading-relaxed mb-8">
-                Your application is being reviewed.<br />
-                We will contact you at your email address shortly.
-              </p>
-              <button
-                onClick={() => setIsSuccessModalOpen(false)}
-                className="w-full bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-xl transition-all border border-white/10"
-              >
-                Got it
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <SuccessModal 
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        title="Request Received"
+        description={
+          <>
+            Your application is being reviewed.<br />
+            We will contact you at your email address shortly.
+          </>
+        }
+      />
     </div>
   )
 }
