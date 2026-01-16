@@ -41,11 +41,11 @@ export default function Home() {
   const fetchMarketData = async () => {
     try {
       const [symbolsRes, tickersRes] = await Promise.all([
-        authApi.get("/market/symbols"),
-        authApi.get("/market/tickers")
+        authApi.get("/api/v1/market/symbols"),
+        authApi.get("/api/v1/market/tickers")
       ])
-      setSymbols(symbolsRes.data)
-      setTickers(tickersRes.data)
+      setSymbols(symbolsRes.data.data)
+      setTickers(tickersRes.data.data)
     } catch (error) {
       console.error("Failed to fetch market data:", error)
     }
