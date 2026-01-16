@@ -1,5 +1,129 @@
 @import "tailwindcss";
 
+@theme {
+  --color-background: #0D1117;
+  --color-foreground: #E6EDF3;
+  
+  --color-deep-space: #010409;
+  --color-electric-blue: #58A6FF;
+  --color-neon-magenta: #F85149;
+  
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --background: #0D1117;
+  --foreground: #E6EDF3;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+.glass-panel {
+  background: rgba(22, 27, 34, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(240, 246, 252, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.mesh-gradient {
+  background-color: #0D1117;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(88, 166, 255, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(248, 81, 73, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(88, 166, 255, 0.15) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(248, 81, 73, 0.1) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(13, 17, 23, 1) 0px, transparent 80%);
+}
+
+.noise-bg {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Cfilter id='noiseFilter'%3%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3%3C/filter%3%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3%3C/svg%3");
+  opacity: 0.02;
+  pointer-events: none;
+}
+
+.data-stream {
+  position: absolute;
+  width: 1px;
+  height: 100px;
+  background: linear-gradient(to bottom, transparent, var(--color-electric-blue));
+  opacity: 0.2;
+  animation: stream 10s linear infinite;
+}
+
+@keyframes stream {
+  0% { transform: translateY(-100vh); }
+  100% { transform: translateY(100vh); }
+}
+
+.glitch-text {
+  position: relative;
+  animation: glitch 5s infinite;
+}
+
+@keyframes glitch {
+  0% { transform: none; opacity: 1; }
+  7% { transform: skew(-0.5deg, -0.9deg); opacity: 0.75; }
+  10% { transform: none; opacity: 1; }
+  27% { transform: none; opacity: 1; }
+  30% { transform: skew(0.8deg, -0.1deg); opacity: 0.75; }
+  35% { transform: none; opacity: 1; }
+  52% { transform: none; opacity: 1; }
+  55% { transform: skew(-1deg, 0.2deg); opacity: 0.75; }
+  50% { transform: none; opacity: 1; }
+  72% { transform: none; opacity: 1; }
+  75% { transform: skew(0.4deg, 1deg); opacity: 0.75; }
+  80% { transform: none; opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+
+@keyframes float-eth {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(10deg); }
+}
+
+@keyframes float-btc {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(-10deg); }
+}
+
+.animate-float-eth { animation: float-eth 6s ease-in-out infinite; }
+.animate-float-btc { animation: float-btc 8s ease-in-out infinite; }
+
+.scanline {
+  width: 100%;
+  height: 100px;
+  z-index: 5;
+  background: linear-gradient(
+    0deg,
+    rgba(88, 166, 255, 0) 0%,
+    rgba(88, 166, 255, 0.05) 50%,
+    rgba(88, 166, 255, 0) 100%
+  );
+  opacity: 0.1;
+  position: absolute;
+  bottom: 100%;
+  animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+  0% { bottom: 100%; }
+  100% { bottom: -100px; }
+}
+
+.neon-glow-blue {
+  box-shadow: 0 0 20px rgba(88, 166, 255, 0.15);
+}
+
+.neon-glow-magenta {
+  box-shadow: 0 0 15px rgba(255, 0, 122, 0.4);
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
